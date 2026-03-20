@@ -256,10 +256,16 @@ class HyaSlave(HyaDevice, HyaColor, HyakkiyakouAssets):
 
     def _invite_friend(self, button1: RuleImage, button2: RuleImage, hya_recall_activity: bool = False ) -> bool:
         logger.info('Start clicking')
-        self.ui_click(button1, button2)
+        
+        # 【修改点】：将原本严格校验的 ui_click 替换为单次点击 + 强制等待
+        # 原代码: self.ui_click(button1, button2)
+        self.click(button1)
+        self.device.sleep(1.0)  # 强制等待1秒，让标签页切换完成或弹窗加载完毕
+        
         logger.info('End clicking')
         invite_timer = Timer(8)
         invite_timer.start()
+        
         while 1:
             self.screenshot()
             if not self.appear(self.I_HINVITE):
@@ -275,9 +281,11 @@ class HyaSlave(HyaDevice, HyaColor, HyakkiyakouAssets):
                     continue
                 if self.click(self.C_FRIEND_2, interval=3):
                     continue
+            
             if invite_timer.reached():
                 logger.warning('Invite friend timeout, It may be no friend available')
                 return False
+                
         logger.info('Invite friend done')
         return True
 
